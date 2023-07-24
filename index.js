@@ -45,7 +45,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// get data nilai
+
 app.get("/detail/:id_kecamatan", (req, res) => {
   const id = req.params.id_kecamatan;
   const sql = "SELECT * FROM detail WHERE id_kecamatan = ?";
@@ -73,7 +73,7 @@ app.get("/detail/:filename", (req, res) => {
   res.sendFile(imagePath);
 });
 
-//get data mahasiswa
+
 app.get("/kecamatan", (req, res) => {
   const sql = "SELECT * FROM kecamatan";
   db.query(sql, (err, result) => {
@@ -154,14 +154,13 @@ app.post("/upload", upload.single("gambar"), async (req, res) => {
 
     const count = checkResult[0].count;
     if (count > 0) {
-      // id_kecamatan sudah ada, berikan respon error
+  
       res
         .status(400)
         .json({ success: false, message: "ID kecamatan sudah terdaftar." });
       return;
     }
 
-    // id_kecamatan belum ada, lakukan penyimpanan kecamatan
     const sqlKecamatan = `INSERT INTO kecamatan (id_kecamatan, nama_kecamatan, deskripsi, gambar) VALUES ('${id_kecamatan}','${nama_kecamatan}','${deskripsi}', '${gambar}')`;
 
     db.query(sqlKecamatan, (err, result) => {
@@ -197,11 +196,10 @@ app.post("/log", upload.single("gambar"), async (req, res) => {
   const { nama_kecamatan, id_kecamatan, deskripsi, ket_act, id_admin } =
     req.body;
 
-  // Validasi ukuran gambar
   if (gambars) {
     const imageDimensions = sizeOf(gambars.path);
     if (imageDimensions.width !== 500 || imageDimensions.height !== 500) {
-      // Hapus file yang tidak sesuai ukuran
+ 
       fs.unlinkSync(gambars.path);
 
       return res.status(400).json({
@@ -235,11 +233,11 @@ app.post("/detail", upload.single("gambar"), async (req, res) => {
   const { nama_kecamatan, id_kecamatan, deskripsi, pembangunan, profil } =
     req.body;
 
-  // Validasi ukuran gambar
+
   if (gambars) {
     const imageDimensions = sizeOf(gambars.path);
     if (imageDimensions.width !== 500 || imageDimensions.height !== 500) {
-      // Hapus file yang tidak sesuai ukuran
+  
       fs.unlinkSync(gambars.path);
 
       return res.status(400).json({
@@ -268,7 +266,7 @@ app.post("/detail", upload.single("gambar"), async (req, res) => {
   });
 });
 
-// delete
+
 
 app.delete("/kecamatan/:id_kecamatan", (req, res) => {
   const id_kecamatan = parseInt(req.params.id_kecamatan);
@@ -337,7 +335,7 @@ app.get("/halaman/:id", (req, res) => {
 
 app.post("/logs", async (req, res) => {
   try {
-    // Ambil data log dari body request
+
     const {
       id_admin,
       ket_act,
@@ -391,11 +389,11 @@ app.post("/post/detail", upload.array("gambar", 3), (req, res) => {
   } = req.body;
   const gambar = req.files.map((file) => file.filename);
 
-  // Query untuk menyimpan data kecamatan ke dalam database
+ 
   const query = `INSERT INTO detail (id_kecamatan, nama_kecamatan, bidang, judul, anggaran, lokasi, koordinat, tahun, gambar1, gambar2, gambar3)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  // Eksekusi query dengan parameter yang diberikan
+ 
   db.query(
     query,
     [
@@ -432,16 +430,15 @@ app.post("/api/notifikasi", upload.array("gambar", 3), (req, res) => {
   const { id_kecamatan, nama_kecamatan, pesan } = req.body;
   const gambar = req.files.map((file) => file.filename);
 
-  // Validasi data yang diterima dari aplikasi web
   if (!id_kecamatan || !nama_kecamatan || !pesan || !gambar) {
     return res.status(400).json({ error: "Data tidak lengkap" });
   }
 
-  // Query untuk menyimpan data kecamatan ke dalam database
+ 
   const query = `INSERT INTO notifikasi (id_kecamatan, nama_kecamatan, pesan, gambar)
                  VALUES (?, ?, ?, ?)`;
 
-  // Eksekusi query dengan parameter yang diberikan
+ 
   db.query(
     query,
     [id_kecamatan, nama_kecamatan, pesan, gambar[0]],
@@ -456,7 +453,7 @@ app.post("/api/notifikasi", upload.array("gambar", 3), (req, res) => {
       console.log("Data kecamatan berhasil disimpan");
       res.json({ success: true, message: "Data notifikasi berhasil disimpan" });
 
-      // Setelah 10 detik, hapus data dari database
+      
       setTimeout(() => {
         const deleteQuery = "DELETE FROM notifikasi WHERE id_kecamatan = ?";
         db.query(deleteQuery, [id_kecamatan], (deleteError, deleteResults) => {
@@ -466,7 +463,7 @@ app.post("/api/notifikasi", upload.array("gambar", 3), (req, res) => {
             console.log("Data kecamatan berhasil dihapus");
           }
         });
-      }, 7200000); // Delay penghapusan selama 10 detik (10000 milidetik)
+      }, 7200000);
     }
   );
 });
@@ -553,7 +550,6 @@ app.put("/update-gambar/:id", upload.single("gambar"), (req, res) => {
 app.get("/kecamatan/:id", (req, res) => {
   const id = req.params.id;
 
-  // Query untuk mengambil data kecamatan dari database berdasarkan ID
   const sql = "SELECT * FROM kecamatan WHERE id = ?";
   db.query(sql, [id], (err, result) => {
     if (err) {
@@ -572,3 +568,74 @@ app.get("/kecamatan/:id", (req, res) => {
   });
 });
 
+app.post("/upload-pdf", upload.single("pdf"), (req, res) => {
+  const { nis, nisn, nama } = req.body;
+  const pdf = req.file;
+
+  if (!pdf) {
+    res.status(400).json({ message: "File PDF tidak ditemukan" });
+    return;
+  }
+
+  // Mendapatkan ekstensi file PDF
+  const pdfExtension = path.extname(pdf.originalname);
+
+  // Format penamaan file: IJASA-NIS.pdf
+  const fileName = `IJASAH-${nis}${pdfExtension}`;
+
+  // Path tujuan untuk menyimpan file PDF
+  const destinationPath = path.join(__dirname, "asset", fileName);
+
+  // Memindahkan file PDF ke path tujuan
+  fs.rename(pdf.path, destinationPath, (err) => {
+    if (err) {
+      res.status(500).json({ message: "Terjadi kesalahan dalam menyimpan file PDF" });
+      throw err;
+    }
+
+    // Simpan nama file ke database
+    const sql = "INSERT INTO data_siswa (nis, nisn, nama, ijasah) VALUES (?, ?, ?, ?)";
+    db.query(sql, [nis, nisn, nama, fileName], (err, result) => {
+      if (err) {
+        res.status(500).json({ message: "Terjadi kesalahan dalam menyimpan data PDF" });
+        throw err;
+      }
+
+      res.status(200).json({ message: "Data PDF berhasil disimpan" });
+    });
+  });
+});
+
+
+
+app.get("/search", (req, res) => {
+  const { nis } = req.query;
+
+  // Lakukan pencarian data berdasarkan NIS di database
+  const sql = "SELECT * FROM data_siswa WHERE nis = ?";
+  db.query(sql, [nis], (err, result) => {
+    if (err) {
+      res.status(500).json({ message: "Terjadi kesalahan dalam melakukan pencarian data" });
+      throw err;
+    }
+
+    if (result.length > 0) {
+      res.status(200).json({ data: result });
+    } else {
+      res.status(404).json({ message: "Data tidak ditemukan" });
+    }
+  });
+});
+
+
+app.get("/download-pdf/:fileName", (req, res) => {
+  const fileName = req.params.fileName;
+  const filePath = path.join(__dirname, "asset", fileName);
+
+  res.download(filePath, (err) => {
+    if (err) {
+      console.error("Error downloading PDF:", err);
+      res.status(500).json({ message: "Terjadi kesalahan dalam mengunduh file PDF" });
+    }
+  });
+});
