@@ -10,7 +10,7 @@ const multer = require("multer");
 const sharp = require("sharp");
 const sizeOf = require("image-size");
 const fs = require("fs");
-const API_URL = "192.168.1.27";
+const API_URL = "192.168.1.6";
 
 app.use(bodyparseer.json());
 app.use(bodyparseer.urlencoded({ extended: false }));
